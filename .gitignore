@@ -1,0 +1,7 @@
+# Terraform-related files
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Sensitive files passed between steps
+*.autogen.*
