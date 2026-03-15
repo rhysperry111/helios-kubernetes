@@ -6,7 +6,7 @@ Basic scripts to get a barebones Kubernetes cluster deployed in Proxmox. Current
 
 ## Step 1 - Terraform create VMs
 
-This step clones a base Arch cloud-init template to make controller and worker VMs. Uses the proxmox terraform provider which can sometimes be a little tempermental.
+This step clones a base Arch cloud-init template to make controller and worker VMs. Uses the proxmox terraform provider which can sometimes be a little temperamental.
 
 It generates an ansible inventory for the next step.
 
