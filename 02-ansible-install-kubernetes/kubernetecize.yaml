@@ -186,6 +186,13 @@
       args:
         creates: /etc/kubernetes/manifests/kube-vip.yaml
 
+    - name: kube-vip | Patch manifest to use super-admin.conf (required k8s >= 1.29)
+      replace:
+        path: /etc/kubernetes/manifests/kube-vip.yaml
+        regexp: '(path: /etc/kubernetes/)admin\.conf'
+        replace: '\1super-admin.conf'
+      when: inventory_hostname == groups['controllers'][0]
+
 - name: Controllers | Bootstrap primary controller
   hosts: "{{ groups['controllers'][0] }}"
   become: true
