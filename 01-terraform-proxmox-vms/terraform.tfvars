@@ -4,6 +4,7 @@ proxmox_nodes = ["prox", "brox", "crox", "drox"]
 # Networking
 network_prefix      = "192.168.0"
 gateway             = "192.168.0.1"
+control_plane_vip   = "192.168.0.220" 
 controller_ip_start = 221
 worker_ip_start     = 231
 network_bridge      = "vmbr0"

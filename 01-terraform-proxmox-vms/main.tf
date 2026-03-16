@@ -208,6 +208,7 @@ resource "local_file" "ansible_inventory" {
     controllers         = proxmox_vm_qemu.controllers
     workers             = proxmox_vm_qemu.workers
     network_prefix      = var.network_prefix
+    control_plane_vip   = var.control_plane_vip
     controller_ip_start = var.controller_ip_start
     worker_ip_start     = var.worker_ip_start
   })
