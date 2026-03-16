@@ -1,0 +1,293 @@
+---
+- name: Init | Wait for hosts
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Wait for SSH connection
+      wait_for_connection:
+        timeout: 300
+
+- name: Common | System configuration
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Common | Disable subsequent cloud-init runs
+      file:
+        path: /etc/cloud/cloud-init.disabled
+        state: touch
+        owner: root
+        group: root
+        mode: "0644"
+      changed_when: false
+
+    - name: Common | Remove swap entry from fstab
+      lineinfile:
+        path: /etc/fstab
+        search_string: swapfile
+        state: absent
+
+    - name: Common | Check if swap is active
+      command: swapon --show
+      register: swap_active
+      changed_when: false
+
+    - name: Common | Disable swap at runtime
+      command: swapoff -a
+      when: swap_active.stdout != ""
+
+    - name: Common | Configure required kernel modules (load at boot)
+      copy:
+        dest: /etc/modules-load.d/k8s.conf
+        content: |
+          overlay
+          br_netfilter
+        owner: root
+        group: root
+        mode: "0644"
+      register: kmod_conf
+
+    - name: Common | Load required kernel modules now
+      community.general.modprobe:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - overlay
+        - br_netfilter
+
+    - name: Common | Configure kernel networking parameters
+      copy:
+        dest: /etc/sysctl.d/k8s.conf
+        content: |
+          net.bridge.bridge-nf-call-iptables  = 1
+          net.bridge.bridge-nf-call-ip6tables = 1
+          net.ipv4.ip_forward                 = 1
+        owner: root
+        group: root
+        mode: "0644"
+      register: sysctl_conf
+
+    - name: Common | Apply sysctl parameters
+      command: sysctl --system
+      when: sysctl_conf.changed
+      changed_when: true
+
+    - name: Common | Set FQDN hostname
+      hostname:
+        name: "{{ inventory_hostname }}.{{ k8s_domain }}"
+        use: systemd
+
+    - name: Common | Write /etc/hosts
+      template:
+        src: ./resources/hosts.j2
+        dest: /etc/hosts
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Common | Update all packages
+      pacman:
+        update_cache: true
+        upgrade: true
+      register: pkg_upgrade
+
+    - name: Common | Install core Kubernetes packages
+      pacman:
+        name: "{{ k8s_core_packages }}"
+        state: present
+        extra_args: "--ask=4"  # Undocumented pacman flag to bypass conflict prompts
+      register: pkg_core
+
+    - name: Common | Install addon packages
+      pacman:
+        name: "{{ k8s_addon_packages }}"
+        state: present
+      register: pkg_addon
+      when: k8s_addon_packages | length > 0
+
+    - name: Common | Create containerd config directory
+      file:
+        path: /etc/containerd
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Common | Configure containerd
+      copy:
+        src: ./resources/containerd.toml
+        dest: /etc/containerd/config.toml
+        owner: root
+        group: root
+        mode: "0644"
+      register: containerd_conf
+
+    - name: Common | Enable and start core services
+      systemd_service:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+      loop:
+        - containerd
+        - kubelet
+
+    - name: Common | Enable and start addon services
+      systemd_service:
+        name: iscsid
+        enabled: true
+        state: started
+      when: "'open-iscsi' in k8s_addon_packages"
+
+    - name: Common | Restart containerd if config changed
+      systemd_service:
+        name: containerd
+        state: restarted
+      when: containerd_conf.changed
+
+    - name: Common | Reboot nodes if required
+      reboot:
+        reboot_timeout: 300
+      when: >
+        pkg_core.changed or
+        pkg_upgrade.changed or
+        kmod_conf.changed
+
+- name: Controllers | Deploy kube-vip static pod
+  hosts: controllers
+  become: true
+  tasks:
+
+    - name: kube-vip | Create manifests directory
+      file:
+        path: /etc/kubernetes/manifests
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: kube-vip | Pull image
+      command: >
+        ctr --namespace k8s.io image pull
+        ghcr.io/kube-vip/kube-vip:latest
+      changed_when: false
+
+    - name: kube-vip | Generate static pod manifest
+      shell: >
+        ctr --namespace k8s.io run --rm --net-host
+        ghcr.io/kube-vip/kube-vip:{{ k8s_kube_vip_version }}
+        kube-vip-gen-{{ ansible_date_time.epoch }}
+        /kube-vip manifest pod
+        --interface {{ k8s_vip_interface }}
+        --address {{ k8s_vip }}
+        --controlplane
+        --arp
+        --leaderElection
+        > /etc/kubernetes/manifests/kube-vip.yaml
+      args:
+        creates: /etc/kubernetes/manifests/kube-vip.yaml
+
+- name: Controllers | Bootstrap primary controller
+  hosts: "{{ groups['controllers'][0] }}"
+  become: true
+  tasks:
+
+    - name: Bootstrap | Create kubeadm config directory
+      file:
+        path: /etc/kubeadm
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Bootstrap | Template kubeadm init config
+      template:
+        src: ./resources/kubeadm.yaml.j2
+        dest: /etc/kubeadm/init.yaml
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Bootstrap | Initialise cluster
+      command: kubeadm init --config /etc/kubeadm/init.yaml --upload-certs
+      args:
+        creates: /etc/kubernetes/kubelet.conf
+
+    - name: Bootstrap | Generate worker join command
+      command: kubeadm token create --print-join-command
+      register: worker_join_cmd
+      changed_when: false
+
+    - name: Bootstrap | Upload certificates and capture key
+      shell: >
+        kubeadm init phase upload-certs --upload-certs 2>/dev/null | tail -1
+      register: cert_key_cmd
+      changed_when: false
+
+    - name: Bootstrap | Export join commands as facts (available to other plays)
+      set_fact:
+        worker_join_command: "{{ worker_join_cmd.stdout }}"
+        controller_join_command: >-
+          {{ worker_join_cmd.stdout }}
+          --control-plane
+          --certificate-key {{ cert_key_cmd.stdout | trim }}
+
+- name: Controllers | Join secondary controllers to control plane
+  hosts: controllers
+  become: true
+  serial: 1  # Join one at a time to avoid etcd race conditions
+  tasks:
+
+    - name: Secondary controllers | Join control plane
+      command: >
+        {{ hostvars[groups['controllers'][0]].controller_join_command }}
+      args:
+        creates: /etc/kubernetes/kubelet.conf
+      when: inventory_hostname != groups['controllers'][0]
+
+- name: Workers | Join cluster
+  hosts: workers
+  become: true
+  tasks:
+
+    - name: Workers | Join cluster
+      command: >
+        {{ hostvars[groups['controllers'][0]].worker_join_command }}
+      args:
+        creates: /etc/kubernetes/kubelet.conf
+
+- name: Controllers | Install admin tools and export kubeconfig
+  hosts: controllers
+  become: false
+  tasks:
+
+    - name: Admin | Install controller packages
+      pacman:
+        name: "{{ k8s_controller_packages }}"
+        state: present
+      become: true
+
+    - name: Admin | Create .kube directory
+      file:
+        path: "/home/{{ k8s_admin_user }}/.kube"
+        state: directory
+        owner: "{{ k8s_admin_user }}"
+        group: "{{ k8s_admin_user }}"
+        mode: "0755"
+
+    - name: Admin | Copy admin.conf to user home
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: "/home/{{ k8s_admin_user }}/.kube/config"
+        owner: "{{ k8s_admin_user }}"
+        group: "{{ k8s_admin_user }}"
+        mode: "0600"
+        remote_src: true
+      become: true
+
+    - name: Admin | Fetch kubeconfig for Terraform step 3
+      fetch:
+        src: /etc/kubernetes/admin.conf
+        dest: ../03-terraform-deploy-resources/kubeconfig.autogen.yaml
+        flat: true
+      become: true
+      run_once: true
