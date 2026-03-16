@@ -174,7 +174,7 @@
     - name: kube-vip | Generate static pod manifest
       shell: >
         ctr --namespace k8s.io run --rm --net-host
-        ghcr.io/kube-vip/kube-vip:{{ k8s_kube_vip_version }}
+        ghcr.io/kube-vip/kube-vip:latest
         kube-vip-gen-{{ ansible_date_time.epoch }}
         /kube-vip manifest pod
         --interface {{ k8s_vip_interface }}
