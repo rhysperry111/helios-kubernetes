@@ -77,12 +77,6 @@ variable "nameserver" {
   default     = "1.1.1.1"
 }
 
-variable "control_plane_vip" {
-  description = "IP address for the Kubernetes control plane VIP."
-  type        = string
-}
-
-
 variable "controller_ip_start" {
   description = "Last octet of the first controller IP (e.g. 221 → 192.168.0.221)"
   type        = number
