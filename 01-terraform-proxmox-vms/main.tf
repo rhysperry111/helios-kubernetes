@@ -15,17 +15,17 @@ provider "proxmox" {
 
 locals {
   vm_defaults = {
-    clone      = var.template_name
-    full_clone = true
-    os_type    = "cloud-init"
-    onboot     = true
-    vm_state   = "running"
-    hotplug    = "network,disk,usb"
-    bios       = "ovmf"
-    scsihw     = "virtio-scsi-single"
-    boot       = "order=virtio0"
-    agent      = 1
-    hastate    = "started"
+    clone              = var.template_name
+    full_clone         = true
+    os_type            = "cloud-init"
+    start_at_node_boot = true
+    vm_state           = "running"
+    hotplug            = "network,disk,usb"
+    bios               = "ovmf"
+    scsihw             = "virtio-scsi-single"
+    boot               = "order=virtio0"
+    agent              = 1
+    hastate            = "started"
   }
 }
 
@@ -53,17 +53,17 @@ resource "proxmox_vm_qemu" "controllers" {
 
   target_node = element(var.proxmox_nodes, count.index % length(var.proxmox_nodes))
 
-  clone      = local.vm_defaults.clone
-  full_clone = local.vm_defaults.full_clone
-  os_type    = local.vm_defaults.os_type
-  onboot     = local.vm_defaults.onboot
-  vm_state   = local.vm_defaults.vm_state
-  hotplug    = local.vm_defaults.hotplug
-  bios       = local.vm_defaults.bios
-  scsihw     = local.vm_defaults.scsihw
-  boot       = local.vm_defaults.boot
-  agent      = local.vm_defaults.agent
-  hastate    = local.vm_defaults.hastate
+  clone              = local.vm_defaults.clone
+  full_clone         = local.vm_defaults.full_clone
+  os_type            = local.vm_defaults.os_type
+  start_at_node_boot = local.vm_defaults.start_at_node_boot
+  vm_state           = local.vm_defaults.vm_state
+  hotplug            = local.vm_defaults.hotplug
+  bios               = local.vm_defaults.bios
+  scsihw             = local.vm_defaults.scsihw
+  boot               = local.vm_defaults.boot
+  agent              = local.vm_defaults.agent
+  hastate            = local.vm_defaults.hastate
 
   cpu {
     type  = "host"
@@ -133,17 +133,17 @@ resource "proxmox_vm_qemu" "workers" {
 
   target_node = element(reverse(var.proxmox_nodes), count.index % length(var.proxmox_nodes))
 
-  clone      = local.vm_defaults.clone
-  full_clone = local.vm_defaults.full_clone
-  os_type    = local.vm_defaults.os_type
-  onboot     = local.vm_defaults.onboot
-  vm_state   = local.vm_defaults.vm_state
-  hotplug    = local.vm_defaults.hotplug
-  bios       = local.vm_defaults.bios
-  scsihw     = local.vm_defaults.scsihw
-  boot       = local.vm_defaults.boot
-  agent      = local.vm_defaults.agent
-  hastate    = local.vm_defaults.hastate
+  clone              = local.vm_defaults.clone
+  full_clone         = local.vm_defaults.full_clone
+  os_type            = local.vm_defaults.os_type
+  start_at_node_boot = local.vm_defaults.start_at_node_boot
+  vm_state           = local.vm_defaults.vm_state
+  hotplug            = local.vm_defaults.hotplug
+  bios               = local.vm_defaults.bios
+  scsihw             = local.vm_defaults.scsihw
+  boot               = local.vm_defaults.boot
+  agent              = local.vm_defaults.agent
+  hastate            = local.vm_defaults.hastate
 
   cpu {
     type  = "host"
