@@ -203,7 +203,7 @@ resource "proxmox_vm_qemu" "workers" {
 #
 
 resource "local_file" "ansible_inventory" {
-  filename = "../02-ansible-install-kubernetes/inventory.yaml"
+  filename = "../02-ansible-install-kubernetes/inventory.autogen.yaml"
   content = templatefile("./inventory.tpl", {
     controllers         = proxmox_vm_qemu.controllers
     workers             = proxmox_vm_qemu.workers
