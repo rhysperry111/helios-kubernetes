@@ -5,3 +5,6 @@
 
 # Sensitive files passed between steps
 *.autogen.*
+
+# Sensitive tfvars
+secrets.auto.tfvars
