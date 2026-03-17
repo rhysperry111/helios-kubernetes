@@ -16,6 +16,7 @@ resource "helm_release" "cilium" {
   name       = "cilium"
   repository = "https://helm.cilium.io/"
   chart      = "cilium"
+  namespace  = "kube-system"
   create_namespace = true
 
   values = [
@@ -30,8 +31,8 @@ resource "helm_release" "cilium" {
       ingressController = {
         enabled = true
       }
-      k8sServiceHost = "192.168.0.220"
-      k8sServicePort = 6443
+      k8sServiceHost       = "192.168.0.200"
+      k8sServicePort       = 6443
     })
   ]
 }
