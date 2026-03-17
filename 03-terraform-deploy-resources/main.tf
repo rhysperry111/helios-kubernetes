@@ -13,11 +13,12 @@ provider "helm" {
 }
 
 resource "helm_release" "cilium" {
-  name       = "cilium"
-  repository = "https://helm.cilium.io/"
-  chart      = "cilium"
-  namespace  = "kube-system"
+  name             = "cilium"
+  namespace        = "kube-system"
+  repository       = "https://helm.cilium.io/"
+  chart            = "cilium"
   create_namespace = true
+  wait             = false
 
   values = [
     yamlencode({
@@ -38,11 +39,10 @@ resource "helm_release" "cilium" {
 }
 
 resource "helm_release" "longhorn" {
-  depends_on = [helm_release.cilium]
-  name       = "longhorn"
-  namespace  = "longhorn-system"
-  repository = "https://charts.longhorn.io"
-  chart      = "longhorn"
+  name             = "longhorn"
+  namespace        = "longhorn-system"
+  repository       = "https://charts.longhorn.io"
+  chart            = "longhorn"
   create_namespace = true
-  values     = []
+  wait             = false
 }
