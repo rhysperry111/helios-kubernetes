@@ -122,6 +122,14 @@
         mode: "0644"
       register: containerd_conf
 
+    - name: Common | Reboot nodes if required
+      reboot:
+        reboot_timeout: 300
+      when: >
+        pkg_core.changed or
+        pkg_upgrade.changed or
+        kmod_conf.changed
+
     - name: Common | Enable and start core services
       systemd_service:
         name: "{{ item }}"
@@ -143,14 +151,6 @@
         name: containerd
         state: restarted
       when: containerd_conf.changed
-
-    - name: Common | Reboot nodes if required
-      reboot:
-        reboot_timeout: 300
-      when: >
-        pkg_core.changed or
-        pkg_upgrade.changed or
-        kmod_conf.changed
 
 - name: Controllers | Deploy kube-vip static pod
   hosts: controllers
