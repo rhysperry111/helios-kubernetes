@@ -32,7 +32,7 @@ resource "helm_release" "cilium" {
       ingressController = {
         enabled = true
       }
-      k8sServiceHost       = "192.168.0.200"
+      k8sServiceHost       = var.k8s_vip
       k8sServicePort       = 6443
     })
   ]

@@ -298,3 +298,10 @@
         flat: true
       become: true
       run_once: true
+
+    - name: Admin | Template Terraform vars for step 3
+      template:
+        src: ./resources/terraform.tfvars.j2
+        dest: ../03-terraform-deploy-resources/terraform.autogen.auto.tfvars
+      delegate_to: localhost
+      run_once: true
