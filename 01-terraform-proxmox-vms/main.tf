@@ -113,8 +113,9 @@ resource "proxmox_vm_qemu" "controllers" {
     firewall = true
   }
 
-  ipconfig0  = "ip=${var.network_prefix}.${var.controller_ip_start + count.index}/${var.network_cidr},gw=${var.gateway}"
-  nameserver = var.nameserver
+  ipconfig0    = "ip=${var.network_prefix}.${var.controller_ip_start + count.index}/${var.network_cidr},gw=${var.gateway}"
+  nameserver   = var.nameserver
+  searchdomain = var.searchdomain
 
   sshkeys = var.ssh_public_key
 }
@@ -193,8 +194,9 @@ resource "proxmox_vm_qemu" "workers" {
     firewall = true
   }
 
-  ipconfig0  = "ip=${var.network_prefix}.${var.worker_ip_start + count.index}/${var.network_cidr},gw=${var.gateway}"
-  nameserver = var.nameserver
+  ipconfig0    = "ip=${var.network_prefix}.${var.worker_ip_start + count.index}/${var.network_cidr},gw=${var.gateway}"
+  nameserver   = var.nameserver
+  searchdomain = var.searchdomain
 
   sshkeys = var.ssh_public_key
 }

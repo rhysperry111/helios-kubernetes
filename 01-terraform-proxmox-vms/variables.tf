@@ -77,6 +77,12 @@ variable "nameserver" {
   default     = "1.1.1.1"
 }
 
+variable "searchdomain" {
+  description = "DNS search domain assigned to all VMs"
+  type        = string
+  default     = "."
+}
+
 variable "controller_ip_start" {
   description = "Last octet of the first controller IP (e.g. 221 → 192.168.0.221)"
   type        = number
