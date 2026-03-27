@@ -294,7 +294,7 @@
     - name: Admin | Fetch kubeconfig for Terraform step 3
       fetch:
         src: /etc/kubernetes/admin.conf
-        dest: ../03-terraform-deploy-resources/kubeconfig.autogen.yaml
+        dest: ../03-terraform-deploy-interfaces/kubeconfig.autogen.yaml
         flat: true
       become: true
       run_once: true
@@ -302,6 +302,6 @@
     - name: Admin | Template Terraform vars for step 3
       template:
         src: ./resources/terraform.tfvars.j2
-        dest: ../03-terraform-deploy-resources/terraform.autogen.auto.tfvars
+        dest: ../03-terraform-deploy-interfaces/terraform.autogen.auto.tfvars
       delegate_to: localhost
       run_once: true
