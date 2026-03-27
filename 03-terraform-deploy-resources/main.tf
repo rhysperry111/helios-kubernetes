@@ -37,6 +37,9 @@ resource "helm_release" "cilium" {
       bpf = {
         masquerade = true
       }
+      bgpControlPlane = {
+        enabled = true
+      }
     })
   ]
 }
