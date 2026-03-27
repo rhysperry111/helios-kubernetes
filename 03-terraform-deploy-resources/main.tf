@@ -34,6 +34,9 @@ resource "helm_release" "cilium" {
       }
       k8sServiceHost       = var.k8s_vip
       k8sServicePort       = 6443
+      bpf = {
+        masquerade = true
+      }
     })
   ]
 }
