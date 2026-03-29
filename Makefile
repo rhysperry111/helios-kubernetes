@@ -43,42 +43,42 @@ generate:
 all: step1 step2 step3 step4 step5
 
 step1: generate
-	@echo "\n========== Step 1: Provision Proxmox VMs ==========\n"
+	@echo "========== Step 1: Provision Proxmox VMs =========="
 	cd $(STEP1_DIR) && tofu init -upgrade && tofu apply
 
 step2:
-	@echo "\n========== Step 2: Install Kubernetes ==========\n"
+	@echo "========== Step 2: Install Kubernetes =========="
 	cd $(STEP2_DIR) && ansible-playbook kubernetecize.yaml
 
 step3: generate
-	@echo "\n========== Step 3: Deploy Cluster Interfaces ==========\n"
+	@echo "========== Step 3: Deploy Cluster Interfaces =========="
 	cd $(STEP3_DIR) && tofu init -upgrade && tofu apply
 
 step4: generate
-	@echo "\n========== Step 4: Setup Networking ==========\n"
+	@echo "========== Step 4: Setup Networking =========="
 	cd $(STEP4_DIR) && tofu init -upgrade && tofu apply
 
 step5: generate
-	@echo "\n========== Step 5: Deploy GitOps ==========\n"
+	@echo "========== Step 5: Deploy GitOps =========="
 	cd $(STEP5_DIR) && tofu init -upgrade && tofu apply
 
 
 destroy-all: destroy-step5 destroy-step4 destroy-step3 destroy-step1
 
 destroy-step5:
-	@echo "\n========== Destroying Step 5: GitOps ==========\n"
+	@echo "========== Destroying Step 5: GitOps =========="
 	cd $(STEP5_DIR) && tofu destroy
 
 destroy-step4:
-	@echo "\n========== Destroying Step 4: Networking ==========\n"
+	@echo "========== Destroying Step 4: Networking =========="
 	cd $(STEP4_DIR) && tofu destroy
 
 destroy-step3:
-	@echo "\n========== Destroying Step 3: Cluster Interfaces ==========\n"
+	@echo "========== Destroying Step 3: Cluster Interfaces =========="
 	cd $(STEP3_DIR) && tofu destroy
 
 destroy-step1:
-	@echo "\n========== Destroying Step 1: Proxmox VMs ==========\n"
+	@echo "========== Destroying Step 1: Proxmox VMs =========="
 	cd $(STEP1_DIR) && tofu destroy
 
 
