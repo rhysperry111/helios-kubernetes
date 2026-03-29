@@ -225,6 +225,11 @@ resource "helm_release" "cert_manager" {
       crds = {
         enabled = true 
       }
+      extraArgs = [
+        "--dns01-recursive-nameservers-only",
+        "--dns01-recursive-nameservers=https://1.1.1.1/dns-query,https://8.8.8.8/dns-query",
+        "--dns01-check-retry-period=2s"
+      ]
     })
   ]
 }
