@@ -1,0 +1,78 @@
+# --- Proxmox ---
+proxmox:
+  api_url: "https://prox.rhysperry.com"
+  nodes: ["prox", "brox", "crox", "drox"]
+  template_name: "arch-cloud-template"
+  storage_pool: "vault"
+
+# --- VM Topology ---
+vms:
+  controller_count: 3
+  worker_count: 3
+  controller_vmid_base: 801
+  worker_vmid_base: 851
+  controller:
+    cores: 4
+    memory_gb: 8
+    disk_size: "30G"
+  worker:
+    cores: 8
+    memory_gb: 16
+    disk_size: "100G"
+
+# --- Networking ---
+network:
+  prefix: "192.168.0"
+  cidr: 24
+  gateway: "192.168.0.1"
+  nameserver: "1.1.1.1"
+  searchdomain: "." # Be careful - this will gets passed to pods from resolv.conf and can break all DNS resolution
+  bridge: "vmbr0"
+  controller_ip_start: 221
+  worker_ip_start: 231
+
+# --- Kubernetes ---
+kubernetes:
+  domain: "k8s.rhysperry.com"
+  admin_user: "arch"
+  vip: "192.168.0.200"
+  vip_interface: "eth0"
+  pod_subnet: "10.69.0.0/16"
+  service_subnet: "10.96.0.0/16"
+
+# --- BGP / Load Balancing ---
+bgp:
+  cluster_asn: 65010
+  router_asn: 65000
+  router_ip: "192.168.0.1"
+  lb_pool_cidr: "10.205.200.0/24"
+
+# --- UniFi Controller ---
+unifi:
+  api_url: "https://192.168.0.1"
+  allow_insecure: true
+  bgp_node_cidr: "192.168.0.0/24"
+
+# --- DNS ---
+dns:
+  provider: "cloudflare"
+  zone: "rhysperry.com"
+
+# --- TLS / cert-manager ---
+tls:
+  cluster_issuer: "letsencrypt-prod"
+  acme_server: "https://acme-v02.api.letsencrypt.org/directory"
+
+# --- GitOps ---
+gitops:
+  argocd:
+    namespace: "argocd"
+    hostname: "argocd.k8s.rhysperry.com"
+  gitlab:
+    namespace: "gitlab"
+    hostname: "gitlab.k8s.rhysperry.com"
+    runner_enabled: true
+
+# --- Access ---
+access:
+  ssh_public_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBORUBq28eI+KWbYpHZhA3PiZrzBTNenyP+/yKRSScnL rhys@pegasus"

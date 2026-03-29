@@ -1,10 +1,15 @@
-# Terraform-related files
+# Terraform
 .terraform/
 *.tfstate
 *.tfstate.*
+crash.log
 
 # Sensitive files passed between steps
 *.autogen.*
 
-# Sensitive tfvars
+# Generated per-step vars (regenerate with `make generate`)
+helios.auto.tfvars
+helios.auto.yaml
+
+# Sensitive secrets (never commit)
 secrets.auto.tfvars

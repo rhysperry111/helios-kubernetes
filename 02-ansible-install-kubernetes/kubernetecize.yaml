@@ -291,17 +291,14 @@
         remote_src: true
       become: true
 
-    - name: Admin | Fetch kubeconfig for Terraform step 3
+    - name: Admin | Fetch kubeconfig for downstream Terraform steps
       fetch:
         src: /etc/kubernetes/admin.conf
-        dest: ../03-terraform-deploy-interfaces/kubeconfig.autogen.yaml
+        dest: "{{ item }}/kubeconfig.autogen.yaml"
         flat: true
       become: true
       run_once: true
-
-    - name: Admin | Template Terraform vars for step 3
-      template:
-        src: ./resources/terraform.tfvars.j2
-        dest: ../03-terraform-deploy-interfaces/terraform.autogen.auto.tfvars
-      delegate_to: localhost
-      run_once: true
+      loop:
+        - ../03-terraform-deploy-interfaces
+        - ../04-terraform-setup-networking
+        - ../05-terraform-deploy-gitops

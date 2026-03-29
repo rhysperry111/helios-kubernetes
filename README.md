@@ -1,21 +1,87 @@
-# HELIOS Kubernetes on Proxmox IaC
+# HELIOS Kubernetes on Proxmox - IaC
 
-> Scripts initially built for my homelab "HELIOS"
+> Infrastructure-as-Code for my Kubernetes homelab on Proxmox.
 
-Basic scripts to get a barebones Kubernetes cluster deployed in Proxmox. Currently a fair amount of improvement needed to make things more modular and customizable, however it works well enough to deploy demo applications.
+> [!WARNING]  
+> These playbooks currently do not handle software versioning that well... the main reason being that for fun homelab experimentation purposes I wanted to always be on the latest version of each component. A future change will likely involve pinning versions, or an update step that gracefully updates all components and must be run before further infrastructure changes.
 
-## Step 1 - Terraform create VMs
+## Components
 
-This step clones a base Arch cloud-init template to make controller and worker VMs. Uses the proxmox terraform provider which can sometimes be a little temperamental.
+- Step 1 - Terraform - Provision VMs on Proxmox
+- Step 2 - Ansible - Install Kubernetes (kubeadm)
+- Step 3 - Terraform - Cilium CNI + Longhorn CSI
+- Step 4 - Terraform - BGP, ExternalDNS, cert-manager
+- Step 5 - Terraform - ArgoCD + GitLab
 
-It generates an ansible inventory for the next step.
+All steps are configured from `helios.yaml` at the repo root. A dumb Python script generates the per-step variable files from this.
 
-## Step 2 - Ansible install Kubernetes
+## Dependencies
 
-This step installs kubernetes, associates tools and configurations on the controller and worker machines. It uses a basic kubeadm deployment for simplicity.
+| Tool | Purpose |
+|------|---------|
+| Terraform | Steps 1, 3, 4, 5 |
+| Ansible | Step 2 |
+| Python 3 + PyYAML | Config generation |
+| GNU Make | Orchestration |
 
-It generates a kubeconfig for the next step.
+You also need a Proxmox cloud-init template (currently only works for Arch) to clone VMs from, a Unifi gateway capable of BGP peering, and DNS hosted in Cloudflare.
 
-## Step 3 - Terraform deploy resources
+## Quick Start
 
-This step installs all in-cluster resources such as Cilium CNI and Longhorn CSI.
+```bash
+# 1. Clone the repo
+git clone https://github.com/rhysperry111/helios-kubernetes.git
+cd helios-kubernetes
+
+# 2. Edit the central config
+nano helios.yaml # Adjust as needed for how you need infrastructure deployed
+
+# 3. Add secrets (.gitignore'ed by default)
+cat > 01-terraform-proxmox-vms/secrets.auto.tfvars <<EOF
+proxmox_token_id     = "user@pve!terraform"
+proxmox_token_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+EOF
+
+cat > 04-terraform-setup-networking/secrets.auto.tfvars <<EOF
+unifi_api_key        = "your-unifi-api-key"
+cloudflare_api_token = "your-cloudflare-api-token"
+acme_email           = "you@example.com"
+EOF
+
+# 4. Generate step configs and run all
+make all
+```
+
+## Configuration
+
+Every tuneable value is exposed in `helios.yaml`. Running `make generate` will generate these, but this is also automatically done by other make commands where needed.
+
+Secrets should go in `secrets.auto.tfvars` files for each step.
+
+## Build
+
+```bash
+make all   # Runs steps 1 -> 2 -> 3 -> 4 -> 5
+make step3 # Runs step 3
+```
+
+## Teardown
+
+```bash
+make destroy-all   # Destroys 5 -> 4 -> 3 -> 1
+make destroy-step4 # Destroy step 4
+```
+
+## Step Details
+
+| Step | Directory | README |
+|------|-----------|--------|
+| 1. Proxmox VMs | [`01-terraform-proxmox-vms/`](01-terraform-proxmox-vms/) | [README](01-terraform-proxmox-vms/README.md) |
+| 2. Kubernetes install | [`02-ansible-install-kubernetes/`](02-ansible-install-kubernetes/) | [README](02-ansible-install-kubernetes/README.md) |
+| 3. Cluster interfaces | [`03-terraform-deploy-interfaces/`](03-terraform-deploy-interfaces/) | [README](03-terraform-deploy-interfaces/README.md) |
+| 4. Networking | [`04-terraform-setup-networking/`](04-terraform-setup-networking/) | [README](04-terraform-setup-networking/README.md) |
+| 5. GitOps | [`05-terraform-deploy-gitops/`](05-terraform-deploy-gitops/) | [README](05-terraform-deploy-gitops/README.md) |
+
+## License
+
+[MIT](LICENSE)

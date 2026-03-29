@@ -1,19 +1,5 @@
 ---
 #
-# Identity
-#
-k8s_domain: k8s.rhysperry.com
-k8s_admin_user: arch
-
-#
-# Cluster networking
-#
-k8s_vip: "192.168.0.200"
-k8s_vip_interface: eth0
-k8s_pod_subnet: "10.69.0.0/16"
-k8s_service_subnet: "10.96.0.0/16"
-
-#
 # Packages
 # k8s_core_packages  : required for every node
 # k8s_addon_packages : optional node-level packages
