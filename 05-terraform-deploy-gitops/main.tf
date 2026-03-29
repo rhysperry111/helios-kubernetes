@@ -74,6 +74,8 @@ resource "helm_release" "gitlab" {
   values = [
     yamlencode({
       installCertmanager = false
+      "nginx-ingress" = { enabled = false }
+
       global = {
         hosts = {
           domain   = var.k8s_domain
@@ -87,12 +89,7 @@ resource "helm_release" "gitlab" {
             "cert-manager.io/cluster-issuer" = "letsencrypt-prod"
           }
           configureCertmanager = false
-          tls = {
-            enabled = true
-          }
         }
-        certmanager = { install = false }
-        "nginx-ingress" = { enabled = false }
       }
 
       registry  = { enabled = false }
