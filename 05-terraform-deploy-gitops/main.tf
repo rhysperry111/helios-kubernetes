@@ -115,7 +115,7 @@ resource "helm_release" "gitlab" {
         }
       }
       registry = {
-        enabled = false
+        enabled = true
         ingress = {
           tls = {
             secretName = "helios-gitlab-registry-tls"
