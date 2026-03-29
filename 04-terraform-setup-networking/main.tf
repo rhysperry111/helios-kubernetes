@@ -107,7 +107,7 @@ resource "kubernetes_namespace" "external_dns" {
 }
 
 resource "kubernetes_secret" "external_dns_credentials" {
-  count = var.cloudflare_api_token != "" ? 1 : 0
+  count = var.dns_cloudflare_api_token != "" ? 1 : 0
 
   metadata {
     name      = "external-dns-credentials"
@@ -115,7 +115,7 @@ resource "kubernetes_secret" "external_dns_credentials" {
   }
 
   data = {
-    cloudflare_api_token = var.cloudflare_api_token
+    dns_cloudflare_api_token = var.dns_cloudflare_api_token
   }
 }
 
@@ -134,13 +134,13 @@ resource "helm_release" "external_dns" {
       domainFilters = [var.dns_zone]
       policy        = "sync"
       sources       = ["service", "ingress"]
-      env = var.cloudflare_api_token != "" ? [
+      env = var.dns_cloudflare_api_token != "" ? [
         {
           name = "CF_API_TOKEN"
           valueFrom = {
             secretKeyRef = {
               name = "external-dns-credentials"
-              key  = "cloudflare_api_token"
+              key  = "dns_cloudflare_api_token"
             }
           }
         }
@@ -173,6 +173,17 @@ resource "helm_release" "cert_manager" {
   ]
 }
 
+resource "kubernetes_secret" "cert_manager_cloudflare" {
+  metadata {
+    name      = "acme-cloudflare-api-token"
+    namespace = kubernetes_namespace.cert_manager.metadata[0].name
+  }
+
+  data = {
+    acme-api-token = var.acme_cloudflare_api_token
+  }
+}
+
 resource "kubernetes_manifest" "cluster_issuer" {
   manifest = {
     apiVersion = "cert-manager.io/v1"
@@ -189,9 +200,12 @@ resource "kubernetes_manifest" "cluster_issuer" {
         }
         solvers = [
           {
-            http01 = {
-              ingress = {
-                class = "cilium"
+            dns01 = {
+              cloudflare = {
+                apiTokenSecretRef = {
+                  name = "acme-cloudflare-api-token"
+                  key  = "acme-api-token"
+                }
               }
             }
           }
@@ -200,5 +214,5 @@ resource "kubernetes_manifest" "cluster_issuer" {
     }
   }
 
-  depends_on = [helm_release.cert_manager]
+  depends_on = [helm_release.cert_manager, kubernetes_secret.cert_manager_cloudflare]
 }

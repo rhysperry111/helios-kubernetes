@@ -92,7 +92,7 @@ variable "dns_zone" {
   type        = string
 }
 
-variable "cloudflare_api_token" {
+variable "dns_cloudflare_api_token" {
   description = "Cloudflare API token for ExternalDNS (set in secrets.auto.tfvars)"
   type        = string
   default     = ""
@@ -112,6 +112,13 @@ variable "acme_server" {
   description = "ACME directory URL"
   type        = string
   default     = "https://acme-v02.api.letsencrypt.org/directory"
+}
+
+variable "acme_cloudflare_api_token" {
+  description = "Cloudflare API token for cert-manager DNS-01 challenges (set in secrets.auto.tfvars)"
+  type        = string
+  default     = ""
+  sensitive   = true
 }
 
 variable "cluster_issuer_name" {

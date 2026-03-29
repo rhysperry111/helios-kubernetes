@@ -18,7 +18,7 @@ Configures BGP peering between Cilium and the UniFi gateway, allocates LoadBalan
 
 ### cert-manager
 - Deploys cert-manager via Helm with CRDs enabled.
-- Creates a `ClusterIssuer` for ACME (Let's Encrypt by default) using HTTP-01 challenges through the Cilium ingress.
+- Creates a `ClusterIssuer` for ACME (Let's Encrypt by default) using DNS-01 challenges.
 
 ## Configuration
 
@@ -39,10 +39,11 @@ unifi_api_key = "your-unifi-api-key"
 # unifi_password = "hunter2"
 
 # DNS
-cloudflare_api_token = "your-cloudflare-api-token"
+dns_cloudflare_api_token = "your-cloudflare-api-token"
 
 # TLS
 acme_email = "you@example.com"
+acme_cloudflare_api_token = "your-cloudflare-api-token"
 ```
 
 It is recommended to create a dedicated Limited Admin user on the UniFi controller for Terraform rather than using your personal account.

@@ -43,9 +43,10 @@ proxmox_token_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 EOF
 
 cat > 04-terraform-setup-networking/secrets.auto.tfvars <<EOF
-unifi_api_key        = "your-unifi-api-key"
-cloudflare_api_token = "your-cloudflare-api-token"
-acme_email           = "you@example.com"
+unifi_api_key             = "your-unifi-api-key"
+dns_cloudflare_api_token  = "your-cloudflare-api-token"
+acme_email                = "you@example.com"
+acme_cloudflare_api_token = "your-cloudflare-api-token"
 EOF
 
 # 4. Generate step configs and run all
