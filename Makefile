@@ -44,7 +44,7 @@ all: step1 step2 step3 step4 step5
 
 step1: generate
 	@echo "\n========== Step 1: Provision Proxmox VMs ==========\n"
-	cd $(STEP1_DIR) && terraform init -upgrade && terraform apply
+	cd $(STEP1_DIR) && tofu init -upgrade && tofu apply
 
 step2:
 	@echo "\n========== Step 2: Install Kubernetes ==========\n"
@@ -52,34 +52,34 @@ step2:
 
 step3: generate
 	@echo "\n========== Step 3: Deploy Cluster Interfaces ==========\n"
-	cd $(STEP3_DIR) && terraform init -upgrade && terraform apply
+	cd $(STEP3_DIR) && tofu init -upgrade && tofu apply
 
 step4: generate
 	@echo "\n========== Step 4: Setup Networking ==========\n"
-	cd $(STEP4_DIR) && terraform init -upgrade && terraform apply
+	cd $(STEP4_DIR) && tofu init -upgrade && tofu apply
 
 step5: generate
 	@echo "\n========== Step 5: Deploy GitOps ==========\n"
-	cd $(STEP5_DIR) && terraform init -upgrade && terraform apply
+	cd $(STEP5_DIR) && tofu init -upgrade && tofu apply
 
 
 destroy-all: destroy-step5 destroy-step4 destroy-step3 destroy-step1
 
 destroy-step5:
 	@echo "\n========== Destroying Step 5: GitOps ==========\n"
-	cd $(STEP5_DIR) && terraform destroy
+	cd $(STEP5_DIR) && tofu destroy
 
 destroy-step4:
 	@echo "\n========== Destroying Step 4: Networking ==========\n"
-	cd $(STEP4_DIR) && terraform destroy
+	cd $(STEP4_DIR) && tofu destroy
 
 destroy-step3:
 	@echo "\n========== Destroying Step 3: Cluster Interfaces ==========\n"
-	cd $(STEP3_DIR) && terraform destroy
+	cd $(STEP3_DIR) && tofu destroy
 
 destroy-step1:
 	@echo "\n========== Destroying Step 1: Proxmox VMs ==========\n"
-	cd $(STEP1_DIR) && terraform destroy
+	cd $(STEP1_DIR) && tofu destroy
 
 
 clean:
