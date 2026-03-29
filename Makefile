@@ -46,7 +46,7 @@ step1: generate
 	@echo "========== Step 1: Provision Proxmox VMs =========="
 	cd $(STEP1_DIR) && tofu init -upgrade && tofu apply
 
-step2:
+step2: generate
 	@echo "========== Step 2: Install Kubernetes =========="
 	cd $(STEP2_DIR) && ansible-playbook kubernetecize.yaml
 
