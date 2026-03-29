@@ -3,6 +3,9 @@ terraform {
     kubernetes = {
       source = "hashicorp/kubernetes"
     }
+    kubectl = {
+      source = "alekc/kubectl"
+    }
     helm = {
       source = "hashicorp/helm"
     }
@@ -13,6 +16,10 @@ terraform {
 }
 
 provider "kubernetes" {
+  config_path = "./kubeconfig.autogen.yaml"
+}
+
+provider "kubectl" {
   config_path = "./kubeconfig.autogen.yaml"
 }
 
@@ -31,9 +38,9 @@ provider "unifi" {
   password = var.unifi_api_key == "" ? var.unifi_password : null
 }
 
-resource "kubernetes_manifest" "cilium_lb_ip_pool" {
-  manifest = {
-    apiVersion = "cilium.io/v2alpha1"
+resource "kubectl_manifest" "cilium_lb_ip_pool" {
+  yaml_body = yamlencode({
+    apiVersion = "cilium.io/v2"
     kind       = "CiliumLoadBalancerIPPool"
     metadata = {
       name = "default-pool"
@@ -43,13 +50,68 @@ resource "kubernetes_manifest" "cilium_lb_ip_pool" {
         { cidr = var.bgp_lb_pool_cidr }
       ]
     }
-  }
+  })
 }
 
-resource "kubernetes_manifest" "cilium_bgp_peering_policy" {
-  manifest = {
-    apiVersion = "cilium.io/v2alpha1"
-    kind       = "CiliumBGPPeeringPolicy"
+resource "kubectl_manifest" "cilium_bgp_peer_config" {
+  yaml_body = yamlencode({
+    apiVersion = "cilium.io/v2"
+    kind       = "CiliumBGPPeerConfig"
+    metadata = {
+      name = "default-peer"
+    }
+    spec = {
+      families = [
+        {
+          afi  = "ipv4"
+          safi = "unicast"
+          advertisements = {
+            matchLabels = {
+              "advertise" = "bgp"
+            }
+          }
+        }
+      ]
+    }
+  })
+}
+
+resource "kubectl_manifest" "cilium_bgp_advertisement" {
+  yaml_body = yamlencode({
+    apiVersion = "cilium.io/v2"
+    kind       = "CiliumBGPAdvertisement"
+    metadata = {
+      name = "bgp-advertisements"
+      labels = {
+        "advertise" = "bgp"
+      }
+    }
+    spec = {
+      advertisements = [
+        {
+          advertisementType = "Service"
+          service = {
+            addresses = ["LoadBalancerIP"]
+          }
+          selector = {
+            matchExpressions = [
+              {
+                key      = "somekey"
+                operator = "NotIn"
+                values   = ["never-match-this"]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  })
+}
+
+resource "kubectl_manifest" "cilium_bgp_cluster_config" {
+  yaml_body = yamlencode({
+    apiVersion = "cilium.io/v2"
+    kind       = "CiliumBGPClusterConfig"
     metadata = {
       name = "default-bgp"
     }
@@ -59,29 +121,24 @@ resource "kubernetes_manifest" "cilium_bgp_peering_policy" {
           "kubernetes.io/os" = "linux"
         }
       }
-      virtualRouters = [
+      bgpInstances = [
         {
+          name     = "default"
           localASN = var.bgp_cluster_asn
-          exportPodCIDR = false
-          serviceSelector = {
-            matchExpressions = [
-              {
-                key      = "somekey"
-                operator = "NotIn"
-                values   = ["never-match-this"]
-              }
-            ]
-          }
-          neighbors = [
+          peers = [
             {
-              peerAddress = "${var.bgp_router_ip}/32"
-              peerASN     = var.bgp_router_asn
+              name          = "router"
+              peerASN       = var.bgp_router_asn
+              peerAddress   = var.bgp_router_ip
+              peerConfigRef = {
+                name = "default-peer"
+              }
             }
           ]
         }
       ]
     }
-  }
+  })
 }
 
 resource "unifi_bgp" "kubernetes" {
@@ -183,8 +240,8 @@ resource "kubernetes_secret" "cert_manager_cloudflare" {
   }
 }
 
-resource "kubernetes_manifest" "cluster_issuer" {
-  manifest = {
+resource "kubectl_manifest" "cluster_issuer" {
+  yaml_body = yamlencode({
     apiVersion = "cert-manager.io/v1"
     kind       = "ClusterIssuer"
     metadata = {
@@ -211,7 +268,7 @@ resource "kubernetes_manifest" "cluster_issuer" {
         ]
       }
     }
-  }
+  })
 
   depends_on = [helm_release.cert_manager, kubernetes_secret.cert_manager_cloudflare]
 }
