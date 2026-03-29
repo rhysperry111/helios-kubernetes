@@ -91,7 +91,7 @@ def generate_step02(cfg: dict, root: str) -> None:
     }
     content = "# Auto-generated from helios.yaml - do not edit manually.\n---\n"
     content += yaml.dump(doc, default_flow_style=False, sort_keys=False)
-    write(os.path.join(root, "02-ansible-install-kubernetes", "group_vars", "helios.auto.yaml"), content)
+    write(os.path.join(root, "02-ansible-install-kubernetes", "group_vars", "all", "helios.auto.yaml"), content)
 
 
 def generate_step03(cfg: dict, root: str) -> None:
