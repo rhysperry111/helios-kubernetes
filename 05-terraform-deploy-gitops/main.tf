@@ -73,6 +73,7 @@ resource "helm_release" "gitlab" {
 
   values = [
     yamlencode({
+      installCertmanager = false
       global = {
         hosts = {
           domain   = var.k8s_domain
