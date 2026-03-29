@@ -107,7 +107,6 @@ resource "kubernetes_namespace" "external_dns" {
 }
 
 resource "kubernetes_secret" "external_dns_credentials" {
-  count = var.dns_cloudflare_api_token != "" ? 1 : 0
 
   metadata {
     name      = "external-dns-credentials"
@@ -133,8 +132,8 @@ resource "helm_release" "external_dns" {
       }
       domainFilters = [var.dns_zone]
       policy        = "sync"
-      sources       = ["service", "ingress"]
-      env = var.dns_cloudflare_api_token != "" ? [
+      sources       = ["ingress"]
+      env = [
         {
           name = "CF_API_TOKEN"
           valueFrom = {
@@ -144,7 +143,7 @@ resource "helm_release" "external_dns" {
             }
           }
         }
-      ] : []
+      ]
     })
   ]
 
