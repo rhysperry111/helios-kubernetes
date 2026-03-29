@@ -1,6 +1,6 @@
 # --- Proxmox ---
 proxmox:
-  api_url: "https://prox.rhysperry.com"
+  api_url: "https://prox.rhysperry.com/api2/json"
   nodes: ["prox", "brox", "crox", "drox"]
   template_name: "arch-cloud-template"
   storage_pool: "vault"
