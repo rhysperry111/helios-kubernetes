@@ -43,6 +43,7 @@ def generate_step01(cfg: dict, root: str) -> None:
         "# Auto-generated from helios.yaml - do not edit manually.",
         "",
         "# Proxmox cluster",
+        tfvars_line("proxmox_api_url", px["api_url"]),
         tfvars_line("proxmox_nodes", px["nodes"]),
         "",
         "# Networking",
@@ -133,7 +134,6 @@ def generate_step04(cfg: dict, root: str) -> None:
         tfvars_line("dns_zone", dns["zone"]),
         "",
         "# TLS",
-        tfvars_line("acme_email", tls["acme_email"]),
         tfvars_line("acme_server", tls["acme_server"]),
         tfvars_line("cluster_issuer_name", tls["cluster_issuer"]),
     ]
