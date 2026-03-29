@@ -92,11 +92,42 @@ resource "helm_release" "gitlab" {
         }
       }
 
-      registry  = { enabled = false }
       prometheus = { install = false }
 
       "gitlab-runner" = {
         install = var.gitlab_runner_enabled
+      }
+
+      gitlab = {
+        webservice = {
+          ingress = {
+            tls = {
+              secretName = "helios-gitlab-web-tls"
+            }
+          }
+        }
+        kas = {
+          ingress = {
+            tls = {
+              secretName = "helios-gitlab-kas-tls"
+            }
+          }
+        }
+      }
+      registry = {
+        enabled = false
+        ingress = {
+          tls = {
+            secretName = "helios-gitlab-registry-tls"
+          }
+        }
+      }
+      minio = {
+        ingress = {
+          tls = {
+            secretName = "helios-gitlab-minio-tls"
+          }
+        }
       }
     })
   ]
