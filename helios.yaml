@@ -12,13 +12,13 @@ vms:
   controller_vmid_base: 801
   worker_vmid_base: 851
   controller:
+    cores: 2
+    memory_gb: 4
+    disk_size: "32G"
+  worker:
     cores: 4
     memory_gb: 8
-    disk_size: "30G"
-  worker:
-    cores: 8
-    memory_gb: 16
-    disk_size: "100G"
+    disk_size: "64G"
 
 # --- Networking ---
 network:
