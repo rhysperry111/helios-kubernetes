@@ -9,6 +9,7 @@ k8s_core_packages:
   - containerd.io
   - kubeadm
   - kubelet
+  - ethtool
 
 k8s_addon_packages:
   - ceph-common # For CSI
