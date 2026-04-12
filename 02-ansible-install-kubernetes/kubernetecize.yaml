@@ -27,11 +27,13 @@
         search_string: swap
         state: absent
 
-    - name: Common | Disable zram-generator (Fedora default swap)
-      file:
-        path: /etc/systemd/zram-generator.conf
-        state: absent
-      register: zram_removed
+    - name: Common | Disable zram-generator (override system default with empty config)
+      copy:
+        dest: /etc/systemd/zram-generator.conf
+        content: ""
+        owner: root
+        group: root
+        mode: "0644"
 
     - name: Common | Stop and disable systemd-zram-setup if present
       systemd_service:
@@ -160,6 +162,7 @@
 
     - name: Common | Generate default containerd config
       shell: containerd config default > /etc/containerd/config.toml
+      changed_when: true
 
     - name: Common | Enable SystemdCgroup in containerd config
       replace:
