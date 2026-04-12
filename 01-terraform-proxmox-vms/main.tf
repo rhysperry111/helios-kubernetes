@@ -74,7 +74,7 @@ resource "proxmox_vm_qemu" "controllers" {
   memory = var.controller_memory_gb * 1024
 
   vga {
-    type = "qxl"
+    type = "serial0"
   }
 
   efidisk {
@@ -155,7 +155,7 @@ resource "proxmox_vm_qemu" "workers" {
   memory = var.worker_memory_gb * 1024
 
   vga {
-    type = "qxl"
+    type = "serial0"
   }
 
   efidisk {
