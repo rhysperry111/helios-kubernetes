@@ -92,12 +92,13 @@ resource "helm_release" "ceph_csi_rbd" {
 }
 
 resource "helm_release" "ceph_csi_cephfs" {
-  name       = "ceph-cephfs"
-  namespace  = "ceph-cephfs"
-  repository = "https://ceph.github.io/csi-charts"
-  chart      = "ceph-csi-cephfs"
-  version    = var.ceph_csi_cephfs_chart_version
+  name             = "ceph-cephfs"
+  namespace        = "ceph-cephfs"
+  repository       = "https://ceph.github.io/csi-charts"
+  chart            = "ceph-csi-cephfs"
+  version          = var.ceph_csi_cephfs_chart_version
   create_namespace = true
+  wait             = false
 
   values = [
     yamlencode({
