@@ -34,7 +34,7 @@ network:
 # --- Storage (CEPH) ---
 storage:
   cluster_id: "9fba257b-0248-4fee-8e19-1425160222df"
-  monitors: "192.168.0.181:3300,192.168.0.182:3300,192.168.0.183:3300"
+  monitors: "192.168.0.181:6789,192.168.0.182:6789,192.168.0.183:6789"
   user: kubernetes
   rbd_pool: "vault"
   cephfs_name: "library"
