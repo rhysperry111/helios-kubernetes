@@ -115,6 +115,7 @@ resource "helm_release" "ceph_csi_cephfs" {
         create = true
         name   = "ceph-cephfs"
 
+        clusterID = var.ceph_cluster_id
         fsName = var.ceph_cephfs_name
         pool   = "kubernetes_ceph_csi_cephfs"
 
