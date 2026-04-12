@@ -10,7 +10,7 @@ Installs the core cluster infrastructure: Cilium CNI and CEPH CSI.
 ## Configuration
 
 - `kubernetes.vip` - passed to Cilium as `k8sServiceHost`.
-- `ceph.*` - details required to use external CEPH cluster for CSI.
+- `storage.*` - details required to use external CEPH cluster for CSI.
 
 ### Secrets
 
