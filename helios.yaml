@@ -45,7 +45,7 @@ kubernetes:
   domain: "k8s.rhysperry.com"
   admin_user: "fedora"
   vip: "192.168.0.200"
-  vip_interface: "eth0"
+  vip_interface: "ens18"
   pod_subnet: "10.69.0.0/16"
   service_subnet: "10.96.0.0/16"
 
