@@ -35,11 +35,14 @@ variable "ceph_key" {
 variable "ceph_rbd_pool" {
   description = "CEPH OSD pool to allocate RBD from"
   type        = string
-  sensitive   = true
 }
 
 variable "ceph_cephfs_name" {
   description = "CEPH CephFS to allocate RWX volumes from"
   type        = string
-  sensitive   = true
+}
+
+variable "ceph_cephfs_subvolumegroup" {
+  description = "CEPH CephFS subvolumegroup to allocate RWX volumes from"
+  type        = string
 }

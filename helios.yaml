@@ -38,6 +38,7 @@ storage:
   user: kubernetes
   rbd_pool: "vault"
   cephfs_name: "library"
+  cephfs_subvolumegroup: "kubernetes"
 
 # --- Kubernetes ---
 kubernetes:

@@ -106,6 +106,7 @@ def generate_step03(cfg: dict, root: str) -> None:
         tfvars_line("ceph_user", storage["user"]),
         tfvars_line("ceph_rbd_pool", storage["rbd_pool"]),
         tfvars_line("ceph_cephfs_name", storage["cephfs_name"]),
+        tfvars_line("ceph_cephfs_subvolumegroup", storage["cephfs_subvolumegroup"]),
     ]
     write(os.path.join(root, "03-terraform-deploy-interfaces", "helios.auto.tfvars"), "\n".join(lines) + "\n")
 

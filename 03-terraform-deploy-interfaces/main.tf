@@ -102,6 +102,7 @@ resource "helm_release" "ceph_csi_cephfs" {
         {
           clusterID = var.ceph_cluster_id
           monitors  = split(",", var.ceph_monitors)
+          subvolumeGroup: var.ceph_cephfs_subvolumegroup
         }
       ]
 
@@ -117,7 +118,6 @@ resource "helm_release" "ceph_csi_cephfs" {
 
         clusterID = var.ceph_cluster_id
         fsName = var.ceph_cephfs_name
-        pool   = "kubernetes_ceph_csi_cephfs"
 
         reclaimPolicy         = "Delete"
         allowVolumeExpansion = true
