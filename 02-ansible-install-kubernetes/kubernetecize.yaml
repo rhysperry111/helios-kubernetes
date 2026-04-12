@@ -178,7 +178,7 @@
         pkg_core.changed or
         pkg_upgrade.changed or
         kmod_conf.changed or
-        zram_removed.changed
+        (zram_removed is defined and zram_removed.changed)
 
     - name: Common | Enable and start core services
       systemd_service:
