@@ -77,6 +77,11 @@ resource "proxmox_vm_qemu" "controllers" {
     type = "serial0"
   }
 
+  serial {
+    id = 0
+    type = "socket"
+  }
+
   efidisk {
     efitype = "4m"
     storage = var.storage_pool
@@ -156,6 +161,11 @@ resource "proxmox_vm_qemu" "workers" {
 
   vga {
     type = "serial0"
+  }
+
+  serial {
+    id = 0
+    type = "socket"
   }
 
   efidisk {
