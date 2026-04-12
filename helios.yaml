@@ -31,6 +31,14 @@ network:
   controller_ip_start: 221
   worker_ip_start: 231
 
+# --- Storage (CEPH) ---
+storage:
+  cluster_id: "9fba257b-0248-4fee-8e19-1425160222df"
+  monitors: "192.168.0.181:3300,192.168.0.182:3300,192.168.0.183:3300"
+  user: kubernetes
+  rbd_pool: "vault"
+  cephfs_name: "library"
+
 # --- Kubernetes ---
 kubernetes:
   domain: "k8s.rhysperry.com"

@@ -95,11 +95,17 @@ def generate_step02(cfg: dict, root: str) -> None:
 
 
 def generate_step03(cfg: dict, root: str) -> None:
+    storage = cfg["storage"]
     k = cfg["kubernetes"]
     lines = [
         "# Auto-generated from helios.yaml - do not edit manually.",
         "",
         tfvars_line("k8s_vip", k["vip"]),
+        tfvars_line("ceph_cluster_id", storage["cluster_id"]),
+        tfvars_line("ceph_monitors", storage["monitors"]),
+        tfvars_line("ceph_user", storage["user"]),
+        tfvars_line("ceph_rbd_pool", storage["rbd_pool"]),
+        tfvars_line("ceph_cephfs_name", storage["cephfs_name"]),
     ]
     write(os.path.join(root, "03-terraform-deploy-interfaces", "helios.auto.tfvars"), "\n".join(lines) + "\n")
 

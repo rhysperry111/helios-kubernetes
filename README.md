@@ -9,7 +9,7 @@
 
 - Step 1 - Terraform - Provision VMs on Proxmox
 - Step 2 - Ansible - Install Kubernetes (kubeadm)
-- Step 3 - Terraform - Cilium CNI + Longhorn CSI
+- Step 3 - Terraform - Cilium CNI + CEPH CSI
 - Step 4 - Terraform - BGP, ExternalDNS, cert-manager
 - Step 5 - Terraform - ArgoCD + GitLab
 
@@ -40,6 +40,10 @@ nano helios.yaml # Adjust as needed for how you need infrastructure deployed
 cat > 01-terraform-proxmox-vms/secrets.auto.tfvars <<EOF
 proxmox_token_id     = "user@pve!terraform"
 proxmox_token_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+EOF
+
+cat > 03-terraform-deploy-interfaces/secrets.auto.tfvars <<EOF
+ceph_key = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 EOF
 
 cat > 04-terraform-setup-networking/secrets.auto.tfvars <<EOF
