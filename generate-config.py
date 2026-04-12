@@ -80,6 +80,7 @@ def generate_step01(cfg: dict, root: str) -> None:
 
 def generate_step02(cfg: dict, root: str) -> None:
     k = cfg["kubernetes"]
+    v = cfg["versions"]
 
     doc = {
         "k8s_domain": k["domain"],
@@ -88,6 +89,11 @@ def generate_step02(cfg: dict, root: str) -> None:
         "k8s_vip_interface": k["vip_interface"],
         "k8s_pod_subnet": k["pod_subnet"],
         "k8s_service_subnet": k["service_subnet"],
+        # Versions
+        "k8s_version": v["kubernetes"],
+        "kube_vip_version": v["kube_vip"],
+        "helm_version": v["helm"],
+        "k9s_version": v["k9s"],
     }
     content = "# Auto-generated from helios.yaml - do not edit manually.\n---\n"
     content += yaml.dump(doc, default_flow_style=False, sort_keys=False)
@@ -97,16 +103,25 @@ def generate_step02(cfg: dict, root: str) -> None:
 def generate_step03(cfg: dict, root: str) -> None:
     storage = cfg["storage"]
     k = cfg["kubernetes"]
+    v = cfg["versions"]
+
     lines = [
         "# Auto-generated from helios.yaml - do not edit manually.",
         "",
         tfvars_line("k8s_vip", k["vip"]),
+        "",
+        "# Storage (CEPH)",
         tfvars_line("ceph_cluster_id", storage["cluster_id"]),
         tfvars_line("ceph_monitors", storage["monitors"]),
         tfvars_line("ceph_user", storage["user"]),
         tfvars_line("ceph_rbd_pool", storage["rbd_pool"]),
         tfvars_line("ceph_cephfs_name", storage["cephfs_name"]),
         tfvars_line("ceph_cephfs_subvolumegroup", storage["cephfs_subvolumegroup"]),
+        "",
+        "# Chart versions",
+        tfvars_line("cilium_chart_version", v["cilium"]),
+        tfvars_line("ceph_csi_rbd_chart_version", v["ceph_csi_rbd"]),
+        tfvars_line("ceph_csi_cephfs_chart_version", v["ceph_csi_cephfs"]),
     ]
     write(os.path.join(root, "03-terraform-deploy-interfaces", "helios.auto.tfvars"), "\n".join(lines) + "\n")
 
@@ -117,6 +132,7 @@ def generate_step04(cfg: dict, root: str) -> None:
     unifi = cfg["unifi"]
     dns = cfg["dns"]
     tls = cfg["tls"]
+    v = cfg["versions"]
 
     lines = [
         "# Auto-generated from helios.yaml - do not edit manually.",
@@ -143,6 +159,10 @@ def generate_step04(cfg: dict, root: str) -> None:
         "# TLS",
         tfvars_line("acme_server", tls["acme_server"]),
         tfvars_line("cluster_issuer_name", tls["cluster_issuer"]),
+        "",
+        "# Chart versions",
+        tfvars_line("external_dns_chart_version", v["external_dns"]),
+        tfvars_line("cert_manager_chart_version", v["cert_manager"]),
     ]
     write(os.path.join(root, "04-terraform-setup-networking", "helios.auto.tfvars"), "\n".join(lines) + "\n")
 
@@ -150,6 +170,7 @@ def generate_step04(cfg: dict, root: str) -> None:
 def generate_step05(cfg: dict, root: str) -> None:
     k = cfg["kubernetes"]
     go = cfg["gitops"]
+    v = cfg["versions"]
 
     lines = [
         "# Auto-generated from helios.yaml - do not edit manually.",
@@ -164,6 +185,10 @@ def generate_step05(cfg: dict, root: str) -> None:
         tfvars_line("gitlab_namespace", go["gitlab"]["namespace"]),
         tfvars_line("gitlab_hostname", go["gitlab"]["hostname"]),
         tfvars_line("gitlab_runner_enabled", go["gitlab"]["runner_enabled"]),
+        "",
+        "# Chart versions",
+        tfvars_line("argocd_chart_version", v["argocd"]),
+        tfvars_line("gitlab_chart_version", v["gitlab"]),
     ]
     write(os.path.join(root, "05-terraform-deploy-gitops", "helios.auto.tfvars"), "\n".join(lines) + "\n")
 

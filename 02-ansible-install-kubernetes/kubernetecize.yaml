@@ -24,8 +24,21 @@
     - name: Common | Remove swap entry from fstab
       lineinfile:
         path: /etc/fstab
-        search_string: swapfile
+        search_string: swap
         state: absent
+
+    - name: Common | Disable zram-generator (Fedora default swap)
+      file:
+        path: /etc/systemd/zram-generator.conf
+        state: absent
+      register: zram_removed
+
+    - name: Common | Stop and disable systemd-zram-setup if present
+      systemd_service:
+        name: "systemd-zram-setup@zram0.service"
+        enabled: false
+        state: stopped
+      failed_when: false
 
     - name: Common | Check if swap is active
       command: swapon --show
@@ -72,6 +85,18 @@
       when: sysctl_conf.changed
       changed_when: true
 
+    - name: Common | Set SELinux to permissive
+      selinux:
+        policy: targeted
+        state: permissive
+
+    - name: Common | Disable firewalld
+      systemd_service:
+        name: firewalld
+        enabled: false
+        state: stopped
+      failed_when: false
+
     - name: Common | Set FQDN hostname
       hostname:
         name: "{{ inventory_hostname }}.{{ k8s_domain }}"
@@ -85,21 +110,41 @@
         group: root
         mode: "0644"
 
+    - name: Common | Add Kubernetes YUM repo (v{{ k8s_version }})
+      copy:
+        dest: /etc/yum.repos.d/kubernetes.repo
+        content: |
+          [kubernetes]
+          name=Kubernetes
+          baseurl=https://pkgs.k8s.io/core:/stable:/v{{ k8s_version }}/rpm/
+          enabled=1
+          gpgcheck=1
+          gpgkey=https://pkgs.k8s.io/core:/stable:/v{{ k8s_version }}/rpm/repodata/repomd.xml.key
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Common | Add Docker CE repo (for containerd.io)
+      command: >
+        dnf config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
+      args:
+        creates: /etc/yum.repos.d/docker-ce.repo
+
     - name: Common | Update all packages
-      pacman:
+      dnf:
+        name: "*"
+        state: latest
         update_cache: true
-        upgrade: true
       register: pkg_upgrade
 
     - name: Common | Install core Kubernetes packages
-      pacman:
+      dnf:
         name: "{{ k8s_core_packages }}"
         state: present
-        extra_args: "--ask=4"  # Undocumented pacman flag to bypass conflict prompts
       register: pkg_core
 
     - name: Common | Install addon packages
-      pacman:
+      dnf:
         name: "{{ k8s_addon_packages }}"
         state: present
       register: pkg_addon
@@ -113,13 +158,16 @@
         group: root
         mode: "0755"
 
-    - name: Common | Configure containerd
-      copy:
-        src: ./resources/containerd.toml
-        dest: /etc/containerd/config.toml
-        owner: root
-        group: root
-        mode: "0644"
+    - name: Common | Generate default containerd config
+      shell: containerd config default > /etc/containerd/config.toml
+      args:
+        creates: /etc/containerd/config.toml
+
+    - name: Common | Enable SystemdCgroup in containerd config
+      replace:
+        path: /etc/containerd/config.toml
+        regexp: 'SystemdCgroup\s*=\s*false'
+        replace: 'SystemdCgroup = true'
       register: containerd_conf
 
     - name: Common | Reboot nodes if required
@@ -128,7 +176,8 @@
       when: >
         pkg_core.changed or
         pkg_upgrade.changed or
-        kmod_conf.changed
+        kmod_conf.changed or
+        zram_removed.changed
 
     - name: Common | Enable and start core services
       systemd_service:
@@ -139,12 +188,12 @@
         - containerd
         - kubelet
 
-    - name: Common | Enable and start addon services
+    - name: Common | Enable and start iSCSI daemon
       systemd_service:
         name: iscsid
         enabled: true
         state: started
-      when: "'open-iscsi' in k8s_addon_packages"
+      when: "'iscsi-initiator-utils' in k8s_addon_packages"
 
     - name: Common | Restart containerd if config changed
       systemd_service:
@@ -165,16 +214,16 @@
         group: root
         mode: "0755"
 
-    - name: kube-vip | Pull image
+    - name: kube-vip | Pull image ({{ kube_vip_version }})
       command: >
         ctr --namespace k8s.io image pull
-        ghcr.io/kube-vip/kube-vip:latest
+        ghcr.io/kube-vip/kube-vip:{{ kube_vip_version }}
       changed_when: false
 
     - name: kube-vip | Generate static pod manifest
       shell: >
         ctr --namespace k8s.io run --rm --net-host
-        ghcr.io/kube-vip/kube-vip:latest
+        ghcr.io/kube-vip/kube-vip:{{ kube_vip_version }}
         kube-vip-gen-{{ ansible_date_time.epoch }}
         /kube-vip manifest pod
         --interface {{ k8s_vip_interface }}
@@ -267,10 +316,28 @@
   become: false
   tasks:
 
-    - name: Admin | Install controller packages
-      pacman:
+    - name: Admin | Install controller packages (dnf)
+      dnf:
         name: "{{ k8s_controller_packages }}"
         state: present
+      become: true
+
+    - name: Admin | Install Helm {{ helm_version }}
+      shell: |
+        curl -fsSL https://get.helm.sh/helm-{{ helm_version }}-linux-amd64.tar.gz \
+          | tar xz --strip-components=1 -C /usr/local/bin linux-amd64/helm
+        chmod +x /usr/local/bin/helm
+      args:
+        creates: /usr/local/bin/helm
+      become: true
+
+    - name: Admin | Install k9s {{ k9s_version }}
+      shell: |
+        curl -fsSL "https://github.com/derailed/k9s/releases/download/{{ k9s_version }}/k9s_Linux_amd64.tar.gz" \
+          | tar xz -C /usr/local/bin k9s
+        chmod +x /usr/local/bin/k9s
+      args:
+        creates: /usr/local/bin/k9s
       become: true
 
     - name: Admin | Create .kube directory

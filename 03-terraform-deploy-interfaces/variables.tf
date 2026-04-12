@@ -46,3 +46,22 @@ variable "ceph_cephfs_subvolumegroup" {
   description = "CEPH CephFS subvolumegroup to allocate RWX volumes from"
   type        = string
 }
+
+#
+# Chart versions
+#
+
+variable "cilium_chart_version" {
+  description = "Cilium Helm chart version"
+  type        = string
+}
+
+variable "ceph_csi_rbd_chart_version" {
+  description = "ceph-csi-rbd Helm chart version"
+  type        = string
+}
+
+variable "ceph_csi_cephfs_chart_version" {
+  description = "ceph-csi-cephfs Helm chart version"
+  type        = string
+}

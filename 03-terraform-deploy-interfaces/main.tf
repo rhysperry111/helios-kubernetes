@@ -17,6 +17,7 @@ resource "helm_release" "cilium" {
   namespace        = "kube-system"
   repository       = "https://helm.cilium.io/"
   chart            = "cilium"
+  version          = var.cilium_chart_version
   create_namespace = true
   wait             = false
 
@@ -49,6 +50,7 @@ resource "helm_release" "ceph_csi_rbd" {
   namespace        = "ceph-rbd"
   repository       = "https://ceph.github.io/csi-charts"
   chart            = "ceph-csi-rbd"
+  version          = var.ceph_csi_rbd_chart_version
   create_namespace = true
   wait             = false
 
@@ -94,6 +96,7 @@ resource "helm_release" "ceph_csi_cephfs" {
   namespace  = "ceph-cephfs"
   repository = "https://ceph.github.io/csi-charts"
   chart      = "ceph-csi-cephfs"
+  version    = var.ceph_csi_cephfs_chart_version
   create_namespace = true
 
   values = [

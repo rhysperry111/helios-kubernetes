@@ -126,3 +126,17 @@ variable "cluster_issuer_name" {
   type        = string
   default     = "letsencrypt-prod"
 }
+
+#
+# Chart versions
+#
+
+variable "external_dns_chart_version" {
+  description = "ExternalDNS Helm chart version"
+  type        = string
+}
+
+variable "cert_manager_chart_version" {
+  description = "cert-manager Helm chart version"
+  type        = string
+}

@@ -4,7 +4,7 @@ all:
   vars:
     ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
     ansible_python_interpreter: /usr/bin/python3
-    ansible_user: arch
+    ansible_user: fedora
   children:
     controllers:
       hosts:

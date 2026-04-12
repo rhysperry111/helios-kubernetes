@@ -30,6 +30,7 @@ resource "helm_release" "argocd" {
   namespace  = kubernetes_namespace.argocd.metadata[0].name
   repository = "https://argoproj.github.io/argo-helm"
   chart      = "argo-cd"
+  version    = var.argocd_chart_version
   wait       = true
 
   values = [
@@ -68,6 +69,7 @@ resource "helm_release" "gitlab" {
   namespace  = kubernetes_namespace.gitlab.metadata[0].name
   repository = "https://charts.gitlab.io/"
   chart      = "gitlab"
+  version    = var.gitlab_chart_version
   timeout    = 900
   wait       = false
 

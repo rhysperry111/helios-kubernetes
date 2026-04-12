@@ -38,3 +38,17 @@ variable "gitlab_runner_enabled" {
   type        = bool
   default     = true
 }
+
+#
+# Chart versions
+#
+
+variable "argocd_chart_version" {
+  description = "ArgoCD Helm chart version"
+  type        = string
+}
+
+variable "gitlab_chart_version" {
+  description = "GitLab Helm chart version"
+  type        = string
+}

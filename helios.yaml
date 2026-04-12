@@ -2,7 +2,7 @@
 proxmox:
   api_url: "https://prox.rhysperry.com/api2/json"
   nodes: ["prox", "brox", "crox", "drox"]
-  template_name: "arch-cloud-template"
+  template_name: "fedora-cloud-43-template"
   storage_pool: "vault"
 
 # --- VM Topology ---
@@ -43,11 +43,25 @@ storage:
 # --- Kubernetes ---
 kubernetes:
   domain: "k8s.rhysperry.com"
-  admin_user: "arch"
+  admin_user: "fedora"
   vip: "192.168.0.200"
   vip_interface: "eth0"
   pod_subnet: "10.69.0.0/16"
   service_subnet: "10.96.0.0/16"
+
+# --- Versions ---
+versions:
+  kubernetes: "1.32"
+  kube_vip: "v1.0.0"
+  helm: "v3.17.3"
+  k9s: "v0.40.5"
+  cilium: "1.19.2"
+  ceph_csi_rbd: "3.16.2"
+  ceph_csi_cephfs: "3.16.2"
+  external_dns: "1.20.0"
+  cert_manager: "v1.20.1"
+  argocd: "9.5.0"
+  gitlab: "9.10.1"
 
 # --- BGP / Load Balancing ---
 bgp:

@@ -1,22 +1,22 @@
 ---
 #
 # Packages
-# k8s_core_packages  : required for every node
+# k8s_core_packages  : required for every node (installed from k8s + docker-ce repos)
 # k8s_addon_packages : optional node-level packages
 # k8s_controller_packages: admin tools installed on controllers
 #
 k8s_core_packages:
-  - containerd
+  - containerd.io
   - kubeadm
   - kubelet
 
 k8s_addon_packages:
-  - open-iscsi   # For longhorn
+  - ceph-common # For CSI
+  - iproute-tc # For CNI
 
 k8s_controller_packages:
   - kubectl
-  - helm
-  - k9s
   - git
   - nano
   - less
+  # helm and k9s are installed separately with pinned versions from helios.yaml

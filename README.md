@@ -2,9 +2,6 @@
 
 > Infrastructure-as-Code for my Kubernetes homelab on Proxmox.
 
-> [!WARNING]  
-> These playbooks currently do not handle software versioning that well... the main reason being that for fun homelab experimentation purposes I wanted to always be on the latest version of each component. A future change will likely involve pinning versions, or an update step that gracefully updates all components and must be run before further infrastructure changes.
-
 ## Components
 
 - Step 1 - Terraform - Provision VMs on Proxmox
@@ -13,7 +10,7 @@
 - Step 4 - Terraform - BGP, ExternalDNS, cert-manager
 - Step 5 - Terraform - ArgoCD + GitLab
 
-All steps are configured from `helios.yaml` at the repo root. A dumb Python script generates the per-step variable files from this.
+All steps are configured from `helios.yaml` at the repo root. A Python script generates the per-step variable files from this, including pinned versions for all external dependencies.
 
 ## Dependencies
 
@@ -24,7 +21,7 @@ All steps are configured from `helios.yaml` at the repo root. A dumb Python scri
 | Python 3 + PyYAML | Config generation |
 | GNU Make | Orchestration |
 
-You also need a Proxmox cloud-init template (currently only works for Arch) to clone VMs from, a Unifi gateway capable of BGP peering, and DNS hosted in Cloudflare.
+You also need a Proxmox cloud-init template based on Fedora Cloud to clone VMs from, a Unifi gateway capable of BGP peering, and DNS hosted in Cloudflare.
 
 ## Quick Start
 
@@ -62,6 +59,10 @@ make all
 Every tuneable value is exposed in `helios.yaml`. Running `make generate` will generate these, but this is also automatically done by other make commands where needed.
 
 Secrets should go in `secrets.auto.tfvars` files for each step.
+
+## Versioning
+
+All external dependencies are pinned in `helios.yaml` under the `versions:` key. To upgrade a component, bump the version there and re-run the relevant step. The generator propagates versions to Ansible group_vars (step 2) and Terraform tfvars (steps 3–5).
 
 ## Build
 

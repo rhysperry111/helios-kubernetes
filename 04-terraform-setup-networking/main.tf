@@ -180,6 +180,7 @@ resource "helm_release" "external_dns" {
   namespace  = kubernetes_namespace.external_dns.metadata[0].name
   repository = "https://kubernetes-sigs.github.io/external-dns/"
   chart      = "external-dns"
+  version    = var.external_dns_chart_version
   wait       = true
 
   values = [
@@ -218,6 +219,7 @@ resource "helm_release" "cert_manager" {
   namespace  = kubernetes_namespace.cert_manager.metadata[0].name
   repository = "https://charts.jetstack.io"
   chart      = "cert-manager"
+  version    = var.cert_manager_chart_version
   wait       = true
 
   values = [
