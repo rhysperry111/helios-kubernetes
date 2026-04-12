@@ -100,9 +100,11 @@ resource "helm_release" "ceph_csi_cephfs" {
     yamlencode({
       csiConfig = [
         {
-          clusterID = var.ceph_cluster_id
-          monitors  = split(",", var.ceph_monitors)
-          subvolumeGroup: var.ceph_cephfs_subvolumegroup
+          clusterID      = var.ceph_cluster_id
+          monitors       = split(",", var.ceph_monitors)
+          cephFS = {
+            subvolumeGroup = var.ceph_cephfs_subvolumegroup
+          }
         }
       ]
 
