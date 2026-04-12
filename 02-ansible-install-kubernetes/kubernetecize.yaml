@@ -160,8 +160,6 @@
 
     - name: Common | Generate default containerd config
       shell: containerd config default > /etc/containerd/config.toml
-      args:
-        creates: /etc/containerd/config.toml
 
     - name: Common | Enable SystemdCgroup in containerd config
       replace:
