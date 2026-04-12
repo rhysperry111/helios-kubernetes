@@ -26,7 +26,7 @@ locals {
     scsihw             = "virtio-scsi-single"
     boot               = "order=virtio0"
     agent              = 1
-    hastate            = "started"
+    hastate            = "ignored"
   }
 }
 
